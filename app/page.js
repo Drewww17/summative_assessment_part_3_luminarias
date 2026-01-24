@@ -60,6 +60,7 @@ export default function Home() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [races2025, setRaces2025] = useState([]);
   const [error, setError] = useState(null);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // 2025 Final Driver Standings with race-by-race results
   const driverStandings2025Full = [
@@ -226,7 +227,31 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // 2. Load 2025 F1 Season Data from API
+  // Countdown Timer for Next Race
+  useEffect(() => {
+    const nextRaceDate = new Date('2026-03-06T00:00:00'); // Australian GP 2026
+    
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = nextRaceDate - now;
+      
+      if (diff > 0) {
+        setCountdown({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((diff % (1000 * 60)) / 1000)
+        });
+      } else {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+    
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -454,107 +479,108 @@ export default function Home() {
       {/* ==================== SCHEDULE TAB ==================== */}
       {activeTab === 'schedule' && (
         <div className="animate-slide-up">
-          <h2 className="text-2xl md:text-3xl font-black mb-8 section-title">
-            <span className="text-gradient">2026 F1 Season</span> <span className="text-red-500">Race Calendar</span>
-          </h2>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-2">RACE CALENDAR</h1>
+            <p className="text-gray-500 text-sm">2025 FIA Formula One World Championship</p>
+          </div>
           
-          {/* Season Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12 stagger-children">
-            <div className="card p-6 text-center group hover:glow-red transition-all duration-300">
-              <div className="card-glow top-0 left-1/2 -translate-x-1/2"></div>
-              <div className="text-4xl md:text-5xl font-black stat-number red">24</div>
-              <div className="text-[10px] md:text-xs text-gray-500 uppercase mt-3 tracking-widest font-medium">Grand Prix</div>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="card p-4 border-t-2 border-red-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Total Races</div>
+              <div className="text-2xl md:text-3xl font-black text-white">24</div>
             </div>
-            <div className="card p-6 text-center group transition-all duration-300">
-              <div className="card-glow top-0 left-1/2 -translate-x-1/2"></div>
-              <div className="text-4xl md:text-5xl font-black text-blue-400">5</div>
-              <div className="text-[10px] md:text-xs text-gray-500 uppercase mt-3 tracking-widest font-medium">Continents</div>
+            <div className="card p-4 border-t-2 border-green-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Completed</div>
+              <div className="text-2xl md:text-3xl font-black text-white">0</div>
             </div>
-            <div className="card p-6 text-center group transition-all duration-300">
-              <div className="card-glow top-0 left-1/2 -translate-x-1/2"></div>
-              <div className="text-4xl md:text-5xl font-black text-emerald-400">MAR</div>
-              <div className="text-[10px] md:text-xs text-gray-500 uppercase mt-3 tracking-widest font-medium">Season Start</div>
+            <div className="card p-4 border-t-2 border-blue-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Upcoming</div>
+              <div className="text-2xl md:text-3xl font-black text-white">24</div>
             </div>
-            <div className="card p-6 text-center group transition-all duration-300">
-              <div className="card-glow top-0 left-1/2 -translate-x-1/2"></div>
-              <div className="text-4xl md:text-5xl font-black text-amber-400">DEC</div>
-              <div className="text-[10px] md:text-xs text-gray-500 uppercase mt-3 tracking-widest font-medium">Season End</div>
+            <div className="card p-4 border-t-2 border-yellow-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Next Round</div>
+              <div className="text-2xl md:text-3xl font-black text-white">1</div>
             </div>
           </div>
 
-          {/* Race Calendar */}
-          <h3 className="text-lg font-bold mb-5 text-gray-300 flex items-center gap-4">
-            <span className="w-10 h-1 bg-gradient-to-r from-red-500 to-red-400 rounded-full"></span>
-            Race Calendar
-          </h3>
-          <div className="card overflow-x-auto">
-            <table className="w-full min-w-max md:min-w-full">
-              <thead>
-                <tr className="table-header text-gray-500 text-[10px] md:text-xs uppercase tracking-wider bg-white/5">
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Round</th>
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Grand Prix</th>
-                  <th className="py-4 px-4 md:px-6 text-left hidden md:table-cell font-semibold">Circuit</th>
-                  <th className="py-4 px-4 md:px-6 text-right font-semibold">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { round: 1, name: "Australian Grand Prix", circuit: "Albert Park", date: "06-08 Mar", location: "Australia" },
-                  { round: 2, name: "Chinese Grand Prix", circuit: "Shanghai International", date: "13-15 Mar", location: "China" },
-                  { round: 3, name: "Japanese Grand Prix", circuit: "Suzuka", date: "27-29 Mar", location: "Japan" },
-                  { round: 4, name: "Bahrain Grand Prix", circuit: "Bahrain International", date: "10-12 Apr", location: "Bahrain" },
-                  { round: 5, name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche", date: "17-19 Apr", location: "Saudi Arabia" },
-                  { round: 6, name: "Miami Grand Prix", circuit: "Miami International", date: "01-03 May", location: "Miami" },
-                  { round: 7, name: "Canadian Grand Prix", circuit: "Circuit Gilles Villeneuve", date: "22-24 May", location: "Canada" },
-                  { round: 8, name: "Monaco Grand Prix", circuit: "Circuit de Monaco", date: "05-07 Jun", location: "Monaco" },
-                  { round: 9, name: "Spanish Grand Prix", circuit: "Circuit Barcelona-Catalunya", date: "12-14 Jun", location: "Barcelona" },
-                  { round: 10, name: "Austrian Grand Prix", circuit: "Red Bull Ring", date: "26-28 Jun", location: "Austria" },
-                  { round: 11, name: "British Grand Prix", circuit: "Silverstone", date: "03-05 Jul", location: "Great Britain" },
-                  { round: 12, name: "Belgian Grand Prix", circuit: "Spa-Francorchamps", date: "17-19 Jul", location: "Belgium" },
-                  { round: 13, name: "Hungarian Grand Prix", circuit: "Hungaroring", date: "24-26 Jul", location: "Hungary" },
-                  { round: 14, name: "Dutch Grand Prix", circuit: "Zandvoort", date: "21-23 Aug", location: "Netherlands" },
-                  { round: 15, name: "Italian Grand Prix", circuit: "Monza", date: "04-06 Sep", location: "Italy" },
-                  { round: 16, name: "Azerbaijan Grand Prix", circuit: "Baku City Circuit", date: "24-26 Sep", location: "Azerbaijan" },
-                  { round: 17, name: "Singapore Grand Prix", circuit: "Marina Bay", date: "09-11 Oct", location: "Singapore" },
-                  { round: 18, name: "United States Grand Prix", circuit: "Circuit of The Americas", date: "23-25 Oct", location: "United States" },
-                  { round: 19, name: "Mexico City Grand Prix", circuit: "Hermanos Rodríguez", date: "30 Oct-01 Nov", location: "Mexico" },
-                  { round: 20, name: "São Paulo Grand Prix", circuit: "José Carlos Pace", date: "06-08 Nov", location: "Brazil" },
-                  { round: 21, name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip", date: "19-21 Nov", location: "Las Vegas" },
-                  { round: 22, name: "Qatar Grand Prix", circuit: "Lusail International", date: "27-29 Nov", location: "Qatar" },
-                  { round: 23, name: "Abu Dhabi Grand Prix", circuit: "Yas Marina", date: "04-06 Dec", location: "Abu Dhabi" }
-                ].map((race) => (
-                  <tr 
-                    key={race.round} 
-                    className="table-row border-b border-white/5 hover:bg-white/5 transition-colors"
-                  >
-                    <td className="py-4 md:py-5 px-4 md:px-6">
-                      <span className="badge bg-red-500/15 text-red-400 px-3 py-1.5 rounded-lg font-bold text-xs">R{race.round}</span>
-                    </td>
-                    <td className="py-4 md:py-5 px-4 md:px-6">
-                      <div>
-                        <div className="font-semibold text-white text-sm md:text-base">{race.name}</div>
-                        <div className="text-[10px] text-gray-600 md:hidden">{race.circuit}</div>
-                      </div>
-                    </td>
-                    <td className="py-4 md:py-5 px-4 md:px-6 hidden md:table-cell">
-                      <span className="text-gray-500 text-sm">{race.circuit}</span>
-                    </td>
-                    <td className="py-4 md:py-5 px-4 md:px-6 text-right">
-                      <div className="text-white font-mono font-semibold text-sm">{race.date}</div>
-                      <div className="text-[10px] text-gray-600">{race.location}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Race Calendar Cards */}
+          <div className="space-y-4">
+            {[
+              { round: 1, name: "Australian Grand Prix", circuit: "Albert Park Grand Prix Circuit", location: "MELBOURNE, AUSTRALIA", date: "Mar 8, 2026", time: "04:00:00 UTC", days: 46 },
+              { round: 2, name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", location: "SHANGHAI, CHINA", date: "Mar 15, 2026", time: "07:00:00 UTC", days: 53 },
+              { round: 3, name: "Japanese Grand Prix", circuit: "Suzuka Circuit", location: "SUZUKA, JAPAN", date: "Mar 29, 2026", time: "05:00:00 UTC", days: 67 },
+              { round: 4, name: "Bahrain Grand Prix", circuit: "Bahrain International Circuit", location: "SAKHIR, BAHRAIN", date: "Apr 12, 2026", time: "15:00:00 UTC", days: 81 },
+              { round: 5, name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", location: "JEDDAH, SAUDI ARABIA", date: "Apr 20, 2026", time: "17:00:00 UTC", days: 88 },
+              { round: 6, name: "Miami Grand Prix", circuit: "Miami International Autodrome", location: "MIAMI, USA", date: "May 4, 2026", time: "20:00:00 UTC", days: 102 },
+              { round: 7, name: "Canadian Grand Prix", circuit: "Circuit Gilles Villeneuve", location: "MONTREAL, CANADA", date: "May 25, 2026", time: "20:00:00 UTC", days: 123 },
+              { round: 8, name: "Monaco Grand Prix", circuit: "Circuit de Monaco", location: "MONTE CARLO, MONACO", date: "Jun 7, 2026", time: "13:00:00 UTC", days: 137 },
+              { round: 9, name: "Barcelona Grand Prix", circuit: "Circuit de Barcelona-Catalunya", location: "BARCELONA, SPAIN", date: "Jun 14, 2026", time: "13:00:00 UTC", days: 144 },
+              { round: 10, name: "Austrian Grand Prix", circuit: "Red Bull Ring", location: "SPIELBERG, AUSTRIA", date: "Jun 28, 2026", time: "13:00:00 UTC", days: 158 },
+              { round: 11, name: "British Grand Prix", circuit: "Silverstone Circuit", location: "SILVERSTONE, UK", date: "Jul 5, 2026", time: "14:00:00 UTC", days: 165 },
+              { round: 12, name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", location: "SPA, BELGIUM", date: "Jul 19, 2026", time: "13:00:00 UTC", days: 179 },
+              { round: 13, name: "Hungarian Grand Prix", circuit: "Hungaroring", location: "BUDAPEST, HUNGARY", date: "Jul 26, 2026", time: "13:00:00 UTC", days: 186 },
+              { round: 14, name: "Dutch Grand Prix", circuit: "Circuit Park Zandvoort", location: "ZANDVOORT, NETHERLANDS", date: "Aug 23, 2026", time: "13:00:00 UTC", days: 214 },
+              { round: 15, name: "Italian Grand Prix", circuit: "Autodromo Nazionale di Monza", location: "MONZA, ITALY", date: "Sep 6, 2026", time: "13:00:00 UTC", days: 228 },
+              { round: 16, name: "Spanish Grand Prix", circuit: "Madring", location: "MADRID, SPAIN", date: "Sep 13, 2026", time: "13:00:00 UTC", days: 235 },
+              { round: 17, name: "Azerbaijan Grand Prix", circuit: "Baku City Circuit", location: "BAKU, AZERBAIJAN", date: "Sep 26, 2026", time: "11:00:00 UTC", days: 248 },
+              { round: 18, name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", location: "MARINA BAY, SINGAPORE", date: "Oct 11, 2026", time: "12:00:00 UTC", days: 263 },
+              { round: 19, name: "United States Grand Prix", circuit: "Circuit of the Americas", location: "AUSTIN, USA", date: "Oct 26, 2026", time: "20:00:00 UTC", days: 277 },
+              { round: 20, name: "Mexico City Grand Prix", circuit: "Autódromo Hermanos Rodríguez", location: "MEXICO CITY, MEXICO", date: "Nov 2, 2026", time: "20:00:00 UTC", days: 284 },
+              { round: 21, name: "Brazilian Grand Prix", circuit: "Autódromo José Carlos Pace", location: "SÃO PAULO, BRAZIL", date: "Nov 9, 2026", time: "17:00:00 UTC", days: 291 },
+              { round: 22, name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Street Circuit", location: "LAS VEGAS, USA", date: "Nov 22, 2026", time: "04:00:00 UTC", days: 305 },
+              { round: 23, name: "Qatar Grand Prix", circuit: "Losail International Circuit", location: "LUSAIL, QATAR", date: "Nov 30, 2026", time: "16:00:00 UTC", days: 312 },
+              { round: 24, name: "Abu Dhabi Grand Prix", circuit: "Yas Marina Circuit", location: "ABU DHABI, UAE", date: "Dec 6, 2026", time: "13:00:00 UTC", days: 319 }
+            ].map((race) => (
+              <div 
+                key={race.round} 
+                className={`card p-6 border-l-4 hover:bg-white/5 transition-colors ${race.round === 1 ? 'border-red-500 bg-red-500/5' : 'border-gray-700'}`}
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {race.round === 1 && <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded font-bold">NEXT RACE</span>}
+                      <h3 className="text-lg md:text-xl font-bold text-white">{race.name}</h3>
+                      <span className="text-gray-500 text-sm">{race.round}</span>
+                    </div>
+                    <div className="text-gray-500 text-sm mb-1">📍 {race.circuit}</div>
+                    <div className="text-gray-600 text-xs uppercase">{race.location}</div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-6 text-sm">
+                    <div>
+                      <div className="text-gray-500 text-xs uppercase">Date</div>
+                      <div className="text-white font-medium">{race.date}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 text-xs uppercase">Time</div>
+                      <div className="text-white font-medium">{race.time}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 text-xs uppercase">In</div>
+                      <div className="text-cyan-400 font-bold">{race.days} days</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <div className="mt-10 card p-6 border border-red-500/20 bg-gradient-to-r from-red-500/5 to-transparent hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300">
-            <div className="flex items-center gap-4">
-              <div className="badge bg-red-500 text-white px-4 py-2 rounded-xl font-bold text-xs animate-pulse">NEW</div>
-              <div>
-                <div className="font-bold text-white text-base">2026 Regulation Changes</div>
-                <div className="text-sm text-gray-500 mt-1">New power unit regulations, updated aero rules, and enhanced sustainability measures come into effect this season.</div>
+
+          {/* Legend */}
+          <div className="mt-8 card p-4">
+            <h4 className="text-sm font-bold text-white mb-3">Legend</h4>
+            <div className="flex flex-wrap gap-6 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-500/20 border-l-2 border-red-500 rounded"></div>
+                <span className="text-gray-400">Next Race (Highlighted)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-800 border-l-2 border-gray-700 rounded"></div>
+                <span className="text-gray-400">Upcoming Race</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500/20 border-l-2 border-green-500 rounded"></div>
+                <span className="text-gray-400">Completed Race</span>
               </div>
             </div>
           </div>
@@ -564,9 +590,31 @@ export default function Home() {
       {/* ==================== CONSTRUCTORS TAB ==================== */}
       {activeTab === 'constructors' && (
         <div className="animate-slide-up">
-          <h2 className="text-2xl md:text-3xl font-black mb-8 section-title">
-            <span className="text-gradient">2025 Constructors Championship</span> <span className="text-red-500">Final Standings</span>
-          </h2>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-2">CONSTRUCTOR STANDINGS</h1>
+            <p className="text-gray-500 text-sm">2025 FIA Formula One World Championship</p>
+          </div>
+          
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="card p-4 border-t-2 border-red-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Total Teams</div>
+              <div className="text-2xl md:text-3xl font-black text-white">10</div>
+            </div>
+            <div className="card p-4 border-t-2 border-orange-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Leader</div>
+              <div className="text-2xl md:text-3xl font-black text-white">McLaren</div>
+            </div>
+            <div className="card p-4 border-t-2 border-green-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Top Points</div>
+              <div className="text-2xl md:text-3xl font-black text-white">833</div>
+            </div>
+            <div className="card p-4 border-t-2 border-blue-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Most Wins</div>
+              <div className="text-2xl md:text-3xl font-black text-white">9</div>
+            </div>
+          </div>
           
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
@@ -581,130 +629,152 @@ export default function Home() {
               <div className="modal-content card max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start mb-8">
                   <div className="flex items-center gap-5">
-                    <div style={{ width: '80px', height: '80px' }} className="rounded-2xl bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/10">
-                      <img src={getTeamLogo(selectedTeam.Constructor.name)} alt={selectedTeam.Constructor.name} style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+                    <div style={{ width: '32px', height: '32px' }} className="rounded-2xl bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/10">
+                      <img src={getTeamLogo(selectedTeam.Constructor.name)} alt={selectedTeam.Constructor.name} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
                     </div>
                     <div>
-                      <div className="text-2xl md:text-3xl font-black text-gradient">{selectedTeam.Constructor.name}</div>
-                      <div className="text-gray-500 mt-1">Position: <span className={`font-bold ${selectedTeam.position === "1" ? 'stat-number gold' : selectedTeam.position === "2" ? 'text-gray-400' : selectedTeam.position === "3" ? 'text-amber-600' : 'text-white'}`}>P{selectedTeam.position}</span></div>
+                      <div className="text-2xl md:text-3xl font-black text-white">{selectedTeam.Constructor.name}</div>
+                      <div className="text-gray-500 mt-1">Position: <span className={`font-bold ${selectedTeam.position === "1" ? 'text-yellow-500' : selectedTeam.position === "2" ? 'text-gray-400' : selectedTeam.position === "3" ? 'text-amber-600' : 'text-white'}`}>P{selectedTeam.position}</span></div>
                     </div>
                   </div>
                   <button onClick={() => setSelectedTeam(null)} className="text-gray-500 hover:text-red-500 text-3xl transition-all duration-300 hover:rotate-90 transform w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center">&times;</button>
                 </div>
                 
                 {/* Stats Summary */}
-                <div className="grid grid-cols-3 gap-4 mb-8 stagger-children">
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="card p-5 text-center border-t-2 border-green-500">
                     <div className="text-3xl md:text-4xl font-black text-emerald-400">{selectedTeam.points}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Points</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Points</div>
                   </div>
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
+                  <div className="card p-5 text-center border-t-2 border-blue-500">
                     <div className="text-3xl md:text-4xl font-black text-blue-400">{selectedTeam.wins || 0}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Wins</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Wins</div>
                   </div>
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
-                    <div className="text-3xl md:text-4xl font-black text-amber-400">{selectedTeam.Podiums || 0}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Podiums</div>
+                  <div className="card p-5 text-center border-t-2 border-yellow-500">
+                    <div className="text-3xl md:text-4xl font-black text-amber-400">{selectedTeam.podiums || 0}</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Podiums</div>
                   </div>
                 </div>
 
                 {/* Drivers */}
-                <h3 className="text-lg font-bold mb-5 flex items-center gap-4">
-                  <span className="w-10 h-1 bg-gradient-to-r from-red-500 to-red-400 rounded-full"></span>
-                  Team Drivers
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {selectedTeam.ConstructorStandings?.slice(0, 2).map((driver, idx) => (
-                    <div key={driver.Driver?.driverId} className="card p-5">
+                <h3 className="text-lg font-bold mb-4 text-white">Team Drivers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedTeam.drivers?.slice(0, 2).map((driver, idx) => (
+                    <div key={idx} className="card p-5 border-l-4 border-gray-700">
                       <div className="flex items-center gap-4 mb-4">
-                        <div style={{ width: '50px', height: '50px' }} className="rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 flex-shrink-0 driver-image border border-white/10">
-                          <img src={getDriverPhoto(driver.Driver?.familyName)} alt={driver.Driver?.familyName} style={{ width: '50px', height: '50px', objectFit: 'cover', objectPosition: 'top center' }} />
+                        <div className="w-4 h-4 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 flex-shrink-0 border border-white/10">
+                          <img src={getDriverPhoto(driver.name)} alt={driver.name} className="w-full h-full object-cover object-top" />
                         </div>
                         <div>
-                          <div className="font-bold text-white text-base">{driver.Driver?.familyName}</div>
+                          <div className="font-bold text-white">{driver.name}</div>
                           <div className="text-xs text-gray-500">{driver.wins || 0} wins</div>
                         </div>
                       </div>
-                      <div className="text-2xl md:text-3xl font-black text-emerald-400">{driver.points} <span className="text-sm text-gray-600 font-normal">pts</span></div>
+                      <div className="text-2xl font-black text-emerald-400">{driver.points} <span className="text-sm text-gray-600 font-normal">pts</span></div>
                     </div>
                   ))}
-                </div>
-                
-                <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center text-blue-400 text-sm">
-                  Click team rows to view more details
                 </div>
               </div>
             </div>
           )}
           
-          {/* Constructors Standings Table */}
-          <div className="card overflow-x-auto">
-            <table className="w-full min-w-max md:min-w-full">
-              <thead>
-                <tr className="table-header text-gray-500 text-[10px] md:text-xs uppercase tracking-wider bg-white/5">
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Pos</th>
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Team</th>
-                  <th className="py-4 px-4 md:px-6 text-center hidden sm:table-cell font-semibold">Wins</th>
-                  <th className="py-4 px-4 md:px-6 text-right font-semibold">Points</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.constructorStandings.length > 0 ? (
-                  data.constructorStandings.slice(0, 10).map((t, idx) => (
-                    <tr 
-                      key={idx} 
-                      className={`table-row border-b border-white/5 cursor-pointer transition-all hover:bg-white/10 ${
-                        t.position === "1" ? 'bg-yellow-500/5' : t.position === "2" ? 'bg-gray-400/5' : t.position === "3" ? 'bg-amber-600/5' : ''
-                      }`}
-                      onClick={() => setSelectedTeam(t)}
-                    >
-                      <td className="py-4 md:py-5 px-4 md:px-6">
-                        <span className={`font-black text-lg md:text-xl ${
-                          t.position === "1" ? 'stat-number gold' : t.position === "2" ? 'text-gray-400' : t.position === "3" ? 'text-amber-600' : 'text-white'
-                        }`}>
-                          {t.position}
-                        </span>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6">
-                        <div className="flex items-center gap-3 md:gap-4">
-                          <div style={{ width: '42px', height: '42px' }} className="rounded-xl bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/5">
-                            <img src={getTeamLogo(t.Constructor.name)} alt={t.Constructor.name} style={{ width: '26px', height: '26px', objectFit: 'contain' }} />
-                          </div>
-                          <span className="font-bold text-white text-sm md:text-base">{t.Constructor.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-center hidden sm:table-cell">
-                        <span className="text-blue-400 font-bold">{t.wins || 0}</span>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6 text-right">
-                        <span className="text-emerald-400 font-black text-xl md:text-2xl">{t.points}</span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="py-8 text-center text-gray-500">
-                      Loading constructor standings...
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          {/* Constructor Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.constructorStandings.length > 0 ? (
+              data.constructorStandings.slice(0, 10).map((t, idx) => {
+                const hardcodedTeam = constructorStandings2025Full.find(ht => ht.team === t.Constructor.name);
+                const nationality = {
+                  'McLaren': 'BRITISH',
+                  'Mercedes': 'GERMAN',
+                  'Red Bull': 'AUSTRIAN',
+                  'Ferrari': 'ITALIAN',
+                  'Williams': 'BRITISH',
+                  'RB': 'ITALIAN',
+                  'Aston Martin': 'BRITISH',
+                  'Haas F1 Team': 'AMERICAN',
+                  'Sauber': 'SWISS',
+                  'Alpine': 'FRENCH'
+                }[t.Constructor.name] || 'INTERNATIONAL';
+                
+                return (
+                  <div 
+                    key={idx} 
+                    className={`card p-6 border-l-4 cursor-pointer hover:bg-white/5 transition-all ${
+                      t.position === "1" ? 'border-yellow-500' : t.position === "2" ? 'border-gray-400' : t.position === "3" ? 'border-amber-600' : 'border-gray-700'
+                    }`}
+                    onClick={() => {
+                      setSelectedTeam({...t, podiums: hardcodedTeam?.podiums || 0, drivers: hardcodedTeam?.drivers, racePoints: hardcodedTeam?.racePoints});
+                    }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-4">
+                        <span className={`text-3xl font-black ${
+                          t.position === "1" ? 'text-yellow-500' : t.position === "2" ? 'text-gray-400' : t.position === "3" ? 'text-amber-600' : 'text-gray-600'
+                        }`}>{t.position}</span>
+                        {t.position <= 3 && <span className="text-yellow-500">🏆</span>}
+                        {hardcodedTeam?.wins > 0 && <span className="text-xs text-gray-500">{hardcodedTeam.wins} Wins</span>}
+                      </div>
+                      <div className="w-5 h-5 rounded-xl bg-white/5 flex items-center justify-center overflow-hidden">
+                        <img src={getTeamLogo(t.Constructor.name)} alt={t.Constructor.name} className="w-8 h-8 object-contain" />
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <h3 className="text-xl font-black text-white uppercase">{t.Constructor.name}</h3>
+                      <div className="text-xs text-gray-500 uppercase mt-1">{nationality}</div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="text-xs text-gray-500 uppercase">Championship Points</div>
+                      <div className="text-3xl font-black text-white mt-1">{t.points}</div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-2 text-center text-gray-500 py-8">Loading constructor standings...</div>
+            )}
           </div>
-          
-          <p className="text-center text-gray-600 text-xs md:text-sm mt-8">Click on a team to see more details</p>
+
+          {/* Championship Info */}
+          <div className="mt-8 card p-6 border-t-2 border-gray-700">
+            <h4 className="text-lg font-bold text-white mb-4">Championship Info</h4>
+            <div className="text-gray-400 text-sm space-y-2">
+              <p><strong>Point System:</strong> 1st: 25pts, 2nd: 18pts, 3rd: 15pts, 4th: 12pts, 5th: 10pts, 6th: 8pts, 7th: 6pts, 8th: 4pts, 9th: 2pts, 10th: 1pt</p>
+              <p><strong>Fastest Lap:</strong> +1 point (if finishing in top 10)</p>
+              <p><strong>Constructor Points:</strong> Sum of both drivers' points per race</p>
+              <p><strong>Season:</strong> 2025 FIA Formula One World Championship</p>
+            </div>
+          </div>
         </div>
       )}
 
       {/* ==================== DRIVERS TAB ==================== */}
       {activeTab === 'drivers' && (
         <div className="animate-slide-up">
-          <h2 className="text-2xl md:text-3xl font-black mb-8 section-title">
-            <span className="text-gradient">2025 Drivers Championship</span> <span className="text-red-500">Final Standings</span>
-          </h2>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-2">DRIVER STANDINGS</h1>
+            <p className="text-gray-500 text-sm">2025 FIA Formula One World Championship</p>
+          </div>
+          
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="card p-4 border-t-2 border-red-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Total Drivers</div>
+              <div className="text-2xl md:text-3xl font-black text-white">21</div>
+            </div>
+            <div className="card p-4 border-t-2 border-orange-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Leader</div>
+              <div className="text-2xl md:text-3xl font-black text-white">NOR</div>
+            </div>
+            <div className="card p-4 border-t-2 border-green-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Top Points</div>
+              <div className="text-2xl md:text-3xl font-black text-white">423</div>
+            </div>
+            <div className="card p-4 border-t-2 border-blue-500">
+              <div className="text-xs text-gray-500 uppercase mb-1">Most Wins</div>
+              <div className="text-2xl md:text-3xl font-black text-white">9</div>
+            </div>
+          </div>
           
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
@@ -719,18 +789,16 @@ export default function Home() {
               <div className="modal-content card max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start mb-8">
                   <div className="flex items-center gap-5">
-                    <div style={{ width: '80px', height: '80px' }} className="rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-red-500/50 flex-shrink-0 driver-image">
-                      <img src={getDriverPhoto(selectedDriver.Driver?.familyName || selectedDriver.familyName)} alt={selectedDriver.Driver?.familyName} style={{ width: '80px', height: '80px', objectFit: 'cover', objectPosition: 'top center' }} />
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 border-3 border-red-500/50 flex-shrink-0">
+                      <img src={getDriverPhoto(selectedDriver.Driver?.familyName || selectedDriver.familyName)} alt={selectedDriver.Driver?.familyName} className="w-full h-full object-cover object-top" />
                     </div>
                     <div>
                       <div className="text-2xl md:text-3xl font-black">{selectedDriver.Driver?.givenName || selectedDriver.firstName} <span className="text-red-500">{selectedDriver.Driver?.familyName || selectedDriver.familyName}</span></div>
                       <div className="flex items-center gap-3 text-gray-500 mt-2">
-                        <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center overflow-hidden team-badge">
-                          <img src={getTeamLogo(selectedDriver.Constructors?.[0]?.name || selectedDriver.team)} alt="Team" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
+                        <div className="w-4 h-4 rounded-lg bg-white/5 flex items-center justify-center overflow-hidden">
+                          <img src={getTeamLogo(selectedDriver.Constructors?.[0]?.name || selectedDriver.team)} alt="Team" className="w-4 h-4 object-contain" />
                         </div>
                         <span className="text-sm">{selectedDriver.Constructors?.[0]?.name || selectedDriver.team}</span>
-                        <span className="text-gray-700">•</span>
-                        <span className="text-sm">{selectedDriver.nationality || "N/A"}</span>
                       </div>
                     </div>
                   </div>
@@ -738,104 +806,96 @@ export default function Home() {
                 </div>
                 
                 {/* Stats Summary */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 stagger-children">
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
-                    <div className="text-3xl md:text-4xl font-black stat-number gold">P{selectedDriver.position}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Championship</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div className="card p-5 text-center border-t-2 border-yellow-500">
+                    <div className="text-3xl font-black text-yellow-500">P{selectedDriver.position}</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Championship</div>
                   </div>
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
-                    <div className="text-3xl md:text-4xl font-black text-emerald-400">{selectedDriver.points}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Points</div>
+                  <div className="card p-5 text-center border-t-2 border-green-500">
+                    <div className="text-3xl font-black text-emerald-400">{selectedDriver.points}</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Points</div>
                   </div>
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
-                    <div className="text-3xl md:text-4xl font-black text-blue-400">{selectedDriver.wins || 0}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Wins</div>
+                  <div className="card p-5 text-center border-t-2 border-blue-500">
+                    <div className="text-3xl font-black text-blue-400">{selectedDriver.wins || 0}</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Wins</div>
                   </div>
-                  <div className="card p-5 text-center group">
-                    <div className="card-glow"></div>
-                    <div className="text-3xl md:text-4xl font-black text-amber-400">{selectedDriver.Podiums || 0}</div>
-                    <div className="text-[10px] text-gray-500 uppercase mt-2 tracking-widest font-medium">Podiums</div>
+                  <div className="card p-5 text-center border-t-2 border-orange-500">
+                    <div className="text-3xl font-black text-amber-400">{selectedDriver.podiums || 0}</div>
+                    <div className="text-xs text-gray-500 uppercase mt-2">Podiums</div>
                   </div>
                 </div>
                 
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center text-blue-400 text-sm">
-                  Click driver rows to view detailed performance insights
-                </div>
+                {/* Race by Race Results */}
+                {selectedDriver.results && (
+                  <>
+                    <h3 className="text-lg font-bold mb-4 text-white">2025 Season Results (24 Races)</h3>
+                    <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2 mb-6">
+                      {selectedDriver.results.map((result, idx) => (
+                        <div key={idx} className={`card p-3 text-center ${
+                          result === 1 ? 'bg-yellow-500/20 border-yellow-500/50' :
+                          result === 2 ? 'bg-gray-400/20 border-gray-400/50' :
+                          result === 3 ? 'bg-amber-600/20 border-amber-600/50' :
+                          result <= 10 ? 'bg-blue-500/10 border-blue-500/30' :
+                          'bg-white/5'
+                        }`}>
+                          <div className="text-[10px] text-gray-500 mb-1">R{idx + 1}</div>
+                          <div className={`text-sm font-black ${
+                            result === 1 ? 'text-yellow-400' :
+                            result === 2 ? 'text-gray-300' :
+                            result === 3 ? 'text-amber-500' :
+                            result <= 10 ? 'text-blue-400' :
+                            'text-gray-600'
+                          }`}>{result === 'DNF' ? 'DNF' : `P${result}`}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
           
-          {/* Drivers Standings Table */}
-          <div className="card overflow-x-auto">
-            <table className="w-full min-w-max md:min-w-full">
-              <thead>
-                <tr className="table-header text-gray-500 text-[10px] md:text-xs uppercase tracking-wider bg-white/5">
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Pos</th>
-                  <th className="py-4 px-4 md:px-6 text-left font-semibold">Driver</th>
-                  <th className="py-4 px-4 md:px-6 text-left hidden md:table-cell font-semibold">Team</th>
-                  <th className="py-4 px-4 md:px-6 text-center hidden sm:table-cell font-semibold">Wins</th>
-                  <th className="py-4 px-4 md:px-6 text-right font-semibold">Points</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.driverStandings.length > 0 ? (
-                  data.driverStandings.slice(0, 20).map((d, idx) => (
-                    <tr 
-                      key={idx} 
-                      className={`table-row border-b border-white/5 cursor-pointer transition-all hover:bg-white/10 ${
-                        d.position === "1" ? 'bg-yellow-500/5' : d.position === "2" ? 'bg-gray-400/5' : d.position === "3" ? 'bg-amber-600/5' : ''
-                      }`}
-                      onClick={() => setSelectedDriver({...d, firstName: d.Driver?.givenName, familyName: d.Driver?.familyName})}
-                    >
-                      <td className="py-4 md:py-5 px-4 md:px-6">
-                        <span className={`font-black text-lg md:text-xl ${
-                          d.position === "1" ? 'stat-number gold' : d.position === "2" ? 'text-gray-400' : d.position === "3" ? 'text-amber-600' : 'text-white'
-                        }`}>
-                          {d.position}
-                        </span>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6">
-                        <div className="flex items-center gap-3 md:gap-4">
-                          <div style={{ width: '42px', height: '42px' }} className="rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 flex-shrink-0 driver-image border border-white/10">
-                            <img src={getDriverPhoto(d.Driver?.familyName)} alt={d.Driver?.familyName} style={{ width: '42px', height: '42px', objectFit: 'cover', objectPosition: 'top center' }} />
-                          </div>
-                          <div>
-                            <div className="font-bold text-white text-sm md:text-base">{d.Driver?.givenName} <span className="text-red-400">{d.Driver?.familyName}</span></div>
-                            <div className="text-[10px] text-gray-600 md:hidden">{d.Constructors?.[0]?.name}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6 hidden md:table-cell">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/5">
-                            <img src={getTeamLogo(d.Constructors?.[0]?.name)} alt="Team" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-                          </div>
-                          <span className="text-gray-500 text-sm">{d.Constructors?.[0]?.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6 text-center hidden sm:table-cell">
-                        <span className="text-blue-400 font-bold">{d.wins || 0}</span>
-                      </td>
-                      <td className="py-4 md:py-5 px-4 md:px-6 text-right">
-                        <span className="text-emerald-400 font-black text-xl md:text-2xl">{d.points}</span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="py-8 text-center text-gray-500">
-                      Loading driver standings...
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          {/* Driver Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {data.driverStandings.length > 0 ? (
+              data.driverStandings.slice(0, 21).map((d, idx) => {
+                const hardcodedDriver = driverStandings2025Full.find(hd => hd.driver === d.Driver?.familyName);
+                const driverCode = d.Driver?.code || d.Driver?.familyName?.substring(0,3).toUpperCase();
+                
+                return (
+                  <div 
+                    key={idx} 
+                    className={`card p-5 border-l-4 cursor-pointer hover:bg-white/5 transition-all ${
+                      d.position === "1" ? 'border-yellow-500' : d.position === "2" ? 'border-gray-400' : d.position === "3" ? 'border-amber-600' : 'border-gray-700'
+                    }`}
+                    onClick={() => {
+                      setSelectedDriver({...d, firstName: d.Driver?.givenName, familyName: d.Driver?.familyName, podiums: hardcodedDriver?.podiums || 0, nationality: hardcodedDriver?.nationality, results: hardcodedDriver?.results, team: d.Constructors?.[0]?.name});
+                    }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className={`text-3xl font-black ${
+                        d.position === "1" ? 'text-yellow-500' : d.position === "2" ? 'text-gray-400' : d.position === "3" ? 'text-amber-600' : 'text-gray-600'
+                      }`}>{d.position}</span>
+                      <div className="w-4 h-4 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 flex-shrink-0 border-2 border-white/10">
+                        <img src={getDriverPhoto(d.Driver?.familyName)} alt={d.Driver?.familyName} className="w-full h-full object-cover object-top" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-white truncate">{d.Driver?.givenName} {d.Driver?.familyName}</h3>
+                        <div className="text-xs text-gray-500 uppercase">{d.Constructors?.[0]?.name}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                      <div className="text-gray-500 text-sm">{driverCode}</div>
+                      <div className="text-gray-500 text-sm">{d.wins || 0} wins</div>
+                      <div className="text-white font-bold">{d.points} PTS</div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-3 text-center text-gray-500 py-8">Loading driver standings...</div>
+            )}
           </div>
-          
-          <p className="text-center text-gray-600 text-xs md:text-sm mt-8">Click on a driver to see more details</p>
         </div>
       )}
 
@@ -897,283 +957,231 @@ export default function Home() {
       {/* ==================== HOME TAB ==================== */}
       {activeTab === 'home' && (
         <>
-      {error && (
-        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-blue-400 text-sm flex items-center gap-3">
-          <span>ℹ️</span>
-          <span className="font-medium">{error}</span>
-        </div>
-      )}
-
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
-        
-        {/* Card 1: Next Race */}
-        <div className="card p-8 border-t-4 border-red-500 group relative overflow-hidden hover:shadow-lg hover:shadow-red-500/20 transition-all duration-300">
-          <div className="card-glow -top-10 -right-10"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-red-500/10 to-transparent rounded-bl-full"></div>
-          <div className="flex items-start justify-between mb-4">
-            <h2 className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Upcoming Race Preview</h2>
-            <span className="text-[9px] font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">2025 DATA</span>
-          </div>
-          <div className="text-3xl md:text-4xl font-black mb-3 text-gradient leading-tight">
-            {data.nextRace?.raceName || data.nextRace?.name || "Loading..."}
-          </div>
-          <div className="text-red-400 font-mono text-xl md:text-2xl mb-6 font-semibold">
-            {data.nextRace?.date ? new Date(data.nextRace.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : "--"}
-          </div>
-          <div className="badge bg-gradient-to-r from-red-500/20 to-red-600/10 text-red-400 text-center py-3 px-6 rounded-2xl font-bold text-xs tracking-widest border border-red-500/20">
-            {data.nextRace ? "FEATURED RACE" : "LOADING"}
-          </div>
-        </div>
-
-        {/* Card 2: Last Race Podium */}
-        <div className="card p-8 border-t-4 border-gray-600 group relative overflow-hidden">
-          <div className="card-glow -top-10 -right-10"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gray-500/5 to-transparent rounded-bl-full"></div>
-          <h2 className="text-gray-500 text-[10px] font-bold uppercase mb-6 tracking-widest">Last Race Podium</h2>
-          <div className="space-y-4">
-            {data.lastRace?.Results?.slice(0,3).map((res) => (
-              <div key={res.position} className="flex items-center justify-between py-3 px-4 -mx-4 rounded-xl hover:bg-white/5 transition-all duration-300 group/item">
-                <div className="flex items-center gap-4">
-                  <span className={`font-black w-10 text-lg ${res.position === "1" ? "stat-number gold" : res.position === "2" ? "text-gray-400" : "text-amber-600"}`}>P{res.position}</span>
-                  
-                  {/* Team Logo */}
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/5 group-hover/item:border-white/10 transition-colors">
-                    <img 
-                      src={getTeamLogo(res.Constructor.name)} 
-                      alt="Team" 
-                      style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                    />
-                  </div>
-                  
-                  <span className="font-semibold text-sm text-white">{res.Driver.familyName}</span>
-                </div>
-              </div>
-            )) || (
-              <div className="text-gray-500 text-sm text-center py-4">Loading results...</div>
-            )}
-          </div>
-        </div>
-
-        {/* Card 3: Champion */}
-        <div className="card p-8 border-t-4 border-blue-500 flex flex-col items-center text-center group relative overflow-hidden">
-          <div className="card-glow -top-10 -right-10"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-bl-full"></div>
-          <h2 className="text-gray-500 text-[10px] font-bold uppercase mb-6 w-full text-left tracking-widest">Championship Leader</h2>
-          
-          {/* Driver Photo */}
-          <div className="relative mb-5 flex-shrink-0" style={{ width: '130px', height: '130px' }}>
-             <div className="absolute inset-0 bg-gradient-to-b from-blue-500/30 to-transparent rounded-full animate-pulse"></div>
-             <div 
-               className="rounded-full border-4 border-blue-500/50 relative z-10 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 driver-image"
-               style={{ width: '130px', height: '130px' }}
-             >
-               <img 
-                 src={data.driverStandings.length > 0 ? getDriverPhoto(data.driverStandings[0].Driver?.familyName) : '/f1-car.png'}
-                 alt="Leader"
-                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
-               />
-             </div>
-             <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-black px-4 py-2 rounded-xl text-sm z-20 shadow-lg shadow-blue-500/30">#1</div>
-          </div>
-
-          <div className="text-2xl md:text-3xl font-black text-gradient leading-tight">
-            {data.driverStandings.length > 0 ? `${data.driverStandings[0].Driver?.givenName} ${data.driverStandings[0].Driver?.familyName}` : "Loading..."}
-          </div>
-          <div className="text-blue-400 font-semibold mt-2">
-            {data.driverStandings.length > 0 ? data.driverStandings[0].Constructors?.[0]?.name : "..."}
-          </div>
-          <div className="mt-5 badge bg-gradient-to-r from-blue-500/20 to-blue-600/10 text-blue-400 px-6 py-3 rounded-2xl text-lg font-black border border-blue-500/20">
-            {data.driverStandings.length > 0 ? `${data.driverStandings[0].points} PTS` : "0"}
-          </div>
-          {data.driverStandings.length > 0 && (
-            <div className="mt-3 text-gray-500 text-sm font-medium">{data.driverStandings[0].wins || 0} Wins</div>
+          {error && (
+            <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-blue-400 text-sm flex items-center gap-3">
+              <span>ℹ️</span>
+              <span className="font-medium">{error}</span>
+            </div>
           )}
-        </div>
 
-      </div>
-
-      {/* Constructor Championship Section */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-        {/* Constructor Champion Card */}
-        <div className="card p-8 border-t-4 border-amber-500 group relative overflow-hidden hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300">
-          <div className="card-glow -top-10 -right-10"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-bl-full"></div>
-          <h2 className="text-gray-500 text-[10px] font-bold uppercase mb-6 tracking-widest">2025 Constructor Champion</h2>
-          <div className="flex items-center gap-6">
-            {/* Team Logo */}
-            <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge border border-white/5">
-              <img 
-                src={data.constructorStandings.length > 0 ? getTeamLogo(data.constructorStandings[0].Constructor.name) : '/f1-car.png'}
-                alt="Constructor"
-                style={{ width: '56px', height: '56px', objectFit: 'contain' }}
-              />
+          {/* Hero Section - Next Race Banner */}
+          <div className="mb-8 card p-8 border-l-4 border-red-500 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-red-500/10 to-transparent rounded-bl-full"></div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-red-500 text-xs font-bold uppercase tracking-widest">Next Race</span>
             </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-black text-gradient leading-tight">
-                {data.constructorStandings.length > 0 ? data.constructorStandings[0].Constructor.name : "Loading..."}
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-2">AUSTRALIAN GRAND PRIX</h1>
+            <div className="flex flex-wrap items-center gap-6 text-gray-400 text-sm mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">LOCATION</span>
+                <span className="text-white font-medium">Melbourne, Australia</span>
               </div>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="badge bg-gradient-to-r from-amber-500/20 to-amber-600/10 text-amber-400 px-5 py-2 rounded-xl text-lg font-black border border-amber-500/20">
-                  {data.constructorStandings.length > 0 ? `${data.constructorStandings[0].points} PTS` : "0"}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">DATE</span>
+                <span className="text-white font-medium">2026-03-08</span>
+              </div>
+            </div>
+            
+            {/* Championship Leader */}
+            <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+              <span className="text-gray-500 text-xs uppercase">Championship Leader</span>
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 border-2 border-orange-500">
+                  <img 
+                    src={data.driverStandings.length > 0 ? getDriverPhoto(data.driverStandings[0].Driver?.familyName) : '/f1-car.png'}
+                    alt="Leader"
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
-                {data.constructorStandings.length > 0 && (
-                  <div className="text-gray-500 font-medium">{data.constructorStandings[0].wins || 0} Wins</div>
-                )}
+                <div>
+                  <div className="text-white font-bold text-lg uppercase">
+                    {data.driverStandings.length > 0 ? data.driverStandings[0].Driver?.familyName : "Loading..."}
+                  </div>
+                  <div className="text-gray-500 text-xs">
+                    {data.driverStandings.length > 0 ? data.driverStandings[0].Constructors?.[0]?.name : "..."} · {data.driverStandings.length > 0 ? data.driverStandings[0].points : "0"} POINTS
+                  </div>
+                </div>
+              </div>
+              <span className="ml-auto text-gray-600 text-xs">CURRENT SEASON</span>
+              <span className="text-white font-bold">2025</span>
+            </div>
+          </div>
+
+          {/* Race Countdown Section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-white mb-4">Race Countdown</h2>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="card p-4 text-center border-t-2 border-red-500">
+                <div className="text-3xl md:text-4xl font-black text-white">{String(countdown.days).padStart(2, '0')}</div>
+                <div className="text-xs text-gray-500 uppercase mt-1">Days</div>
+              </div>
+              <div className="card p-4 text-center border-t-2 border-red-500/70">
+                <div className="text-3xl md:text-4xl font-black text-white">{String(countdown.hours).padStart(2, '0')}</div>
+                <div className="text-xs text-gray-500 uppercase mt-1">Hours</div>
+              </div>
+              <div className="card p-4 text-center border-t-2 border-red-500/50">
+                <div className="text-3xl md:text-4xl font-black text-white">{String(countdown.minutes).padStart(2, '0')}</div>
+                <div className="text-xs text-gray-500 uppercase mt-1">Minutes</div>
+              </div>
+              <div className="card p-4 text-center border-t-2 border-red-500/30">
+                <div className="text-3xl md:text-4xl font-black text-white">{String(countdown.seconds).padStart(2, '0')}</div>
+                <div className="text-xs text-gray-500 uppercase mt-1">Seconds</div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 2025 Season Summary Card */}
-        <div className="card p-8 border-t-4 border-emerald-500 group relative overflow-hidden">
-          <div className="card-glow -top-10 -right-10"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-full"></div>
-          <h2 className="text-gray-500 text-[10px] font-bold uppercase mb-6 tracking-widest">2025 Season Summary</h2>
-          <div className="space-y-1">
-            <div className="flex justify-between items-center py-3 px-4 -mx-4 rounded-xl hover:bg-white/5 transition-colors">
-              <span className="text-gray-500 text-sm">World Champion</span>
-              <span className="text-white font-bold text-sm">
-                {data.driverStandings.length > 0 ? `${data.driverStandings[0].Driver?.givenName} ${data.driverStandings[0].Driver?.familyName}` : "..."}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-3 px-4 -mx-4 rounded-xl hover:bg-white/5 transition-colors">
-              <span className="text-gray-500 text-sm">Constructor Champion</span>
-              <span className="text-white font-bold text-sm">{data.constructorStandings.length > 0 ? data.constructorStandings[0].Constructor.name : "..."}</span>
-            </div>
-            <div className="flex justify-between items-center py-3 px-4 -mx-4 rounded-xl hover:bg-white/5 transition-colors">
-              <span className="text-gray-500 text-sm">Total Races</span>
-              <span className="text-white font-bold">{data.raceList.length}</span>
-            </div>
-            <div className="flex justify-between items-center py-3 px-4 -mx-4 rounded-xl hover:bg-white/5 transition-colors">
-              <span className="text-gray-500 text-sm">Season Finale</span>
-              <span className="text-white font-bold text-sm">
-                {data.raceList.length > 0 ? data.raceList[data.raceList.length - 1].raceName : "..."}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Previous Race Full Results Section */}
-      {data.lastRace && (
-        <div className="mt-8 card p-8 border-t-4 border-yellow-500 group relative overflow-hidden">
-          <div className="card-glow -top-20 left-1/2 -translate-x-1/2"></div>
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-yellow-500/5 to-transparent rounded-bl-full"></div>
-          <h2 className="text-gray-500 text-[10px] font-bold uppercase mb-8 tracking-widest">
-            Race Results — <span className="text-yellow-400">{data.lastRace?.raceName || "Loading..."}</span>
-          </h2>
-          
-          {/* Podium Cards - Horizontal Layout */}
-          <div className="flex flex-row justify-center items-end gap-4 md:gap-6 mb-10 flex-wrap">
-            {data.lastRace?.Results?.slice(0, 3).map((res) => (
-              <div 
-                key={res.position} 
-                className={`podium-card flex flex-col items-center p-5 md:p-6 rounded-2xl flex-1 max-w-[200px] ${
-                  res.position === "1" 
-                    ? "p1 order-2" 
-                    : res.position === "2" 
-                    ? "p2 order-1" 
-                    : "p3 order-3"
-                }`}
-                style={{ minHeight: res.position === "1" ? '260px' : '220px' }}
-              >
-                <div className={`text-3xl md:text-4xl font-black mb-4 ${
-                  res.position === "1" ? "stat-number gold" : res.position === "2" ? "text-gray-400" : "text-amber-600"
-                }`}>
-                  P{res.position}
-                </div>
-                <div className="relative mb-4 flex-shrink-0" style={{ width: res.position === "1" ? '85px' : '70px', height: res.position === "1" ? '85px' : '70px' }}>
-                  <div 
-                    className={`rounded-full border-3 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 driver-image ${
-                      res.position === "1" ? "border-yellow-500" : res.position === "2" ? "border-gray-400" : "border-amber-600"
-                    }`}
-                    style={{ width: '100%', height: '100%' }}
-                  >
+          {/* Last Race Section */}
+          {data.lastRace && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-4">Last Race - {data.lastRace?.raceName || "Loading..."}</h2>
+              
+              {/* Race Winner + Stats Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Race Winner Card */}
+                <div className="card p-6 text-center border-t-2 border-yellow-500 relative overflow-hidden">
+                  <div className="absolute top-2 left-2 text-yellow-500 text-lg">🏆</div>
+                  <div className="text-xs text-gray-500 uppercase mb-3">Race Winner</div>
+                  <div className="w-5 h-5 mx-auto rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 border-2 border-yellow-500 mb-3">
                     <img 
-                      src={getDriverPhoto(res.Driver.familyName)}
-                      alt={res.Driver.familyName}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                      src={data.lastRace?.Results?.[0] ? getDriverPhoto(data.lastRace.Results[0].Driver.familyName) : '/f1-car.png'}
+                      alt="Winner"
+                      className="w-full h-full object-cover object-top"
                     />
                   </div>
-                </div>
-                <div className="text-base md:text-lg font-bold text-white text-center">{res.Driver.familyName}</div>
-                <div className="flex items-center gap-2 mt-3">
-                  <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge">
-                    <img src={getTeamLogo(res.Constructor.name)} alt="Team" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
+                  <div className="text-lg font-bold text-white uppercase">
+                    {data.lastRace?.Results?.[0]?.Driver?.familyName || "..."}
                   </div>
-                  <span className="text-gray-500 text-xs">{res.Constructor.name}</span>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {data.lastRace?.Results?.[0]?.Constructor?.name || "..."}
+                  </div>
+                  <div className="text-sm text-gray-400 font-mono mt-2">
+                    {data.lastRace?.Results?.[0]?.Time?.time || "1:26:07.469"}
+                  </div>
                 </div>
-                <div className="text-emerald-400 text-sm mt-3 font-mono font-bold">+{res.points} pts</div>
+
+                {/* Pole Position Card */}
+                <div className="card p-6 text-center border-t-2 border-purple-500">
+                  <div className="text-xs text-gray-500 uppercase mb-3">⚡ Pole Position</div>
+                  <div className="text-lg font-bold text-white uppercase">
+                    {data.lastRace?.Results?.[0]?.Driver?.familyName || "..."}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Qualifying</div>
+                  <div className="text-sm text-purple-400 font-mono mt-2">1:22.207</div>
+                </div>
+
+                {/* Fastest Lap Card */}
+                <div className="card p-6 text-center border-t-2 border-pink-500">
+                  <div className="text-xs text-gray-500 uppercase mb-3">🚀 Fastest Lap</div>
+                  <div className="text-lg font-bold text-white uppercase">
+                    {data.lastRace?.Results?.find(r => r.FastestLap?.rank === "1")?.Driver?.familyName || data.lastRace?.Results?.[3]?.Driver?.familyName || "..."}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Lap 45</div>
+                  <div className="text-sm text-pink-400 font-mono mt-2">1:26.725</div>
+                </div>
               </div>
-            )) || []}
+
+              {/* Top 10 Finishers */}
+              <div className="card p-6 border-t-2 border-gray-700">
+                <h3 className="text-sm font-bold text-white mb-4">Top 10 Finishers</h3>
+                <div className="space-y-2">
+                  {data.lastRace?.Results?.slice(0, 10).map((res) => (
+                    <div 
+                      key={res.position} 
+                      className={`flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-white/5 ${
+                        res.position === "1" ? "bg-yellow-500/10" : 
+                        res.position === "2" ? "bg-gray-400/10" : 
+                        res.position === "3" ? "bg-amber-600/10" : ""
+                      }`}
+                    >
+                      <span className={`w-6 text-center font-bold ${
+                        res.position === "1" ? "text-yellow-500" : 
+                        res.position === "2" ? "text-gray-400" : 
+                        res.position === "3" ? "text-amber-600" : "text-gray-500"
+                      }`}>{res.position}</span>
+                      <div className="w-3 h-3 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 flex-shrink-0">
+                        <img 
+                          src={getDriverPhoto(res.Driver.familyName)}
+                          alt={res.Driver.familyName}
+                          className="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-white font-semibold text-sm">{res.Driver.familyName}</div>
+                        <div className="text-gray-500 text-xs">{res.Constructor.name}</div>
+                      </div>
+                      <div className="text-gray-400 font-mono text-xs hidden sm:block">
+                        {res.position === "1" ? res.Time?.time || "1:26:07.469" : `+${res.Time?.time || "..."}`}
+                      </div>
+                      <div className="text-emerald-400 font-bold text-sm">{res.points} pts</div>
+                    </div>
+                  )) || (
+                    <div className="text-gray-500 text-sm text-center py-4">Loading results...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Driver Standings Section */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Driver Standings</h2>
+              <button 
+                onClick={() => setActiveTab('drivers')}
+                className="text-cyan-400 text-sm hover:text-cyan-300 transition-colors flex items-center gap-1"
+              >
+                VIEW ALL <span>→</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.driverStandings.slice(0, 6).map((standing, index) => (
+                <div key={index} className="card p-4 flex items-center gap-4 border-l-4 hover:bg-white/5 transition-colors" style={{
+                  borderLeftColor: index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : 'transparent'
+                }}>
+                  <span className={`text-2xl font-black w-8 ${
+                    index === 0 ? "text-yellow-500" : 
+                    index === 1 ? "text-gray-400" : 
+                    index === 2 ? "text-amber-600" : "text-gray-600"
+                  }`}>{index + 1}</span>
+                  <div className="w-4 h-4 rounded-full overflow-hidden bg-gradient-to-b from-gray-700 to-gray-900 border-2 border-white/10 flex-shrink-0">
+                    <img 
+                      src={getDriverPhoto(standing.Driver?.familyName)}
+                      alt={standing.Driver?.familyName}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-bold text-sm truncate">
+                      {standing.Driver?.givenName} {standing.Driver?.familyName}
+                    </div>
+                    <div className="text-gray-500 text-xs uppercase truncate">
+                      {standing.Constructors?.[0]?.name}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">{standing.Driver?.code || standing.Driver?.familyName?.substring(0,3).toUpperCase()}</div>
+                    <div className="text-xs text-gray-500">{standing.wins || 0} wins</div>
+                    <div className="text-white font-bold">{standing.points} PTS</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Full Results Table */}
-          <div className="overflow-x-auto rounded-xl">
-            <table className="w-full min-w-max md:min-w-full">
-              <thead>
-                <tr className="table-header text-gray-500 text-[10px] md:text-xs uppercase tracking-wider bg-white/5">
-                  <th className="py-4 px-4 text-left font-semibold">Pos</th>
-                  <th className="py-4 px-4 text-left font-semibold">Driver</th>
-                  <th className="py-4 px-4 text-left hidden md:table-cell font-semibold">Team</th>
-                  <th className="py-4 px-4 text-right font-semibold">Time</th>
-                  <th className="py-4 px-4 text-right font-semibold">Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.lastRace?.Results?.map((res) => (
-                  <tr 
-                    key={res.position} 
-                    className={`table-row border-b border-white/5 hover:bg-white/5 transition-colors ${
-                      res.position === "1" ? "bg-yellow-500/5" : 
-                      res.position === "2" ? "bg-gray-400/5" : 
-                      res.position === "3" ? "bg-amber-600/5" : ""
-                    }`}
-                  >
-                    <td className="py-4 px-4">
-                      <span className={`font-bold ${
-                        res.position === "1" ? "stat-number gold" : 
-                        res.position === "2" ? "text-gray-400" : 
-                        res.position === "3" ? "text-amber-600" : "text-white"
-                      }`}>
-                        {res.position}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div style={{ width: '30px', height: '30px' }} className="rounded-full bg-gradient-to-b from-gray-700 to-gray-900 overflow-hidden flex-shrink-0 hidden sm:flex items-center justify-center driver-image border border-white/10">
-                          <img 
-                            src={getDriverPhoto(res.Driver.familyName)}
-                            alt={res.Driver.familyName}
-                            style={{ width: '30px', height: '30px', objectFit: 'cover', objectPosition: 'top center' }}
-                          />
-                        </div>
-                        <span className="font-semibold text-white text-sm">{res.Driver.familyName}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 hidden md:table-cell">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0 team-badge">
-                          <img src={getTeamLogo(res.Constructor.name)} alt="Team" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
-                        </div>
-                        <span className="text-gray-500 text-sm">{res.Constructor.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-right font-mono text-gray-400 text-sm">{res.time}</td>
-                    <td className="py-4 px-4 text-right">
-                      <span className={`font-bold ${parseInt(res.points) > 0 ? "text-emerald-400" : "text-gray-600"}`}>
-                        {res.points}
-                      </span>
-                    </td>
-                  </tr>
-                )) || []}
-              </tbody>
-            </table>
+          {/* Breaking News Ticker */}
+          <div className="card p-3 overflow-hidden border-t-2 border-cyan-500 relative">
+            <div className="flex items-center">
+              <span className="text-cyan-500 font-bold text-xs uppercase whitespace-nowrap bg-[#0f0f19] pr-4 z-10">Breaking News:</span>
+              <div className="overflow-hidden flex-1">
+                <div className="animate-marquee whitespace-nowrap inline-block">
+                  <span className="text-gray-400 text-sm">
+                    NORRIS LEADS CHAMPIONSHIP ++ NEXT STOP: AUSTRALIA ++ LIVE TELEMETRY ACTIVE ++ WEATHER CONDITIONS: DRY ++ TRACK TEMP: 32°C ++ NORRIS LEADS CHAMPIONSHIP ++ NEXT STOP: AUSTRALIA ++ LIVE TELEMETRY ACTIVE ++ WEATHER CONDITIONS: DRY ++ TRACK TEMP: 32°C ++
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-      </>
+        </>
       )}
       </div>
     </main>

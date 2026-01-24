@@ -193,9 +193,18 @@ a:focus-visible {
   to { opacity: 1; }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* ============= UTILITY ANIMATION CLASSES ============= */
 .animate-slide-up {
   animation: slideInUp 0.7s cubic-bezier(0.23, 1, 0.320, 1) forwards;
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
 }
 
 .animate-fade-left {
@@ -348,19 +357,7 @@ a:focus-visible {
 }
 
 .card-glow {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
-  filter: blur(60px);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-  border-radius: 50%;
-}
-
-.card:hover .card-glow {
-  opacity: 0.25;
+  display: none;
 }
 
 /* ============= GLASS MORPHISM ============= */
@@ -632,8 +629,8 @@ img {
 }
 
 .team-logo-container {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -658,8 +655,8 @@ img {
 }
 
 .driver-photo-container {
-  width: 7rem;
-  height: 7rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
